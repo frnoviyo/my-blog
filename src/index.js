@@ -7,18 +7,22 @@ import middlewareConfig from './config/middleware';
 import apiRoutes from './modules';
 
 const app = express();
-//passing the app instance to middlewareConfig 
+//passing the app instance to middlewareConfig
 middlewareConfig(app);
 
 app.get('/', (req, res) => {
-    res.send('Hello world!');
+  res.send('Hello world!');
 });
 apiRoutes(app);
 
 app.listen(constants.PORT, err => {
   if (err) {
-      throw err;
+    throw err;
   } else {
-      console.log(`Server running on port: ${constants.PORT} --- Running on ${process.env.NODE_ENV} --- Make something great.!`)
+    console.log(
+      `Server running on port: ${constants.PORT} --- Running on ${
+        process.env.NODE_ENV
+      } --- Make something great.!`,
+    );
   }
 });
