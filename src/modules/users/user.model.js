@@ -4,6 +4,8 @@ import { passwordReg } from './user.validations';
 import bcrypt from 'bcrypt-nodejs';
 import jwt from 'jsonwebtoken';
 import constants from '../../config/constants';
+import Post from '../posts/post.model';
+
 const UserSchema = new Schema({
   email: {
     type: String,
@@ -45,6 +47,12 @@ const UserSchema = new Schema({
       message: '{VALUE} is not a valid password!',
     },
   },
+  favorites:   {
+    posts: [{
+      type: Schema.Types.ObjectId,
+      ref: 'Post'
+    }]
+  }
 });
 
 UserSchema.pre('save', function(next) {
@@ -75,12 +83,31 @@ UserSchema.methods = {
       token: `${this.createToken()}`,
     };
   },
-  // toJSON() {
-  //     return {
-  //         _id: this._id,
-  //         userName: this.userName,
-  //         token: `${this.createToken()}`,
-  //     };
-  // },
+  toJSON() {
+      return {
+          _id: this._id,
+          firstName: this.firstName,
+          lastName: this.lastName,
+          userName: this.userName,
+      };
+  },
+  _favorites: {
+    async posts(postId) {
+      if (this.favorites.posts.indexOf(postId)   >= 0) {
+        this.favorites.posts.remove(postId);
+        await Post.decFavoriteCount(postId);
+      } else {
+        this.favorites.posts.push(postId);
+        await Post.incFavoriteCount(postId);
+      }
+      return this.save();
+    },
+    isPostIsFavorite(postId)   {
+      if (this.favorites.posts.indexOf(postId)   >= 0) {
+        return true;
+      }
+     return false;
+    }
+  }
 };
 export default mongoose.model('User', UserSchema);
